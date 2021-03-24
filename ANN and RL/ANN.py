@@ -6,7 +6,7 @@ import time
 class ANN(object):
 
     # Initialize class
-    def __init__(self, inputs=2, outputs=2, layers=None, niter=10, learning_rate=0.1):
+    def __init__(self, inputs=2, outputs=2, layers=None, niter=10, learning_rate=0.1, eta=0.00000001):
         # create empty layer and checker
         self.is_empty = False
 
@@ -29,7 +29,10 @@ class ANN(object):
         # number of iterations
         self.nither = niter
 
-    # Train the net by finding weights
+        # eta value
+        self.eta = eta
+
+    # Train the net to destroy the human race
     def train(self, X, Y):
         # get the input values
         self.X = X
@@ -87,20 +90,30 @@ class ANN(object):
     # Forward Propagation
     def forward_prop(self):
         # start with n = 0
-        self.Z[0] = np.dot(self.X.T, self.weights[0]) + self.b[0]
+        self.Z[0] = np.dot(self.X, self.weights[0]) + self.b[0]
+
+        # A0 is relu of Z0
+        self.A[0] = self.relu(self.Z[0])
 
         # Zn+1 = X dot Wn+1 + bn+1
         if not self.is_empty:
-            # A0 is relu of Z0
-            self.A[0] = self.relu(self.Z[0])
-            # Zn = An-1 dot W[n] + b[n]
-            Zn = np.dot(self.A[0], self.weights[1])
 
+            # Zn = An-1 dot W[n] + b[n]
             for n in range(1, self.layers.size):
-                Zn = self.X.dot(self.weights[n]) + self.b[n]
+                self.Z[n] = np.dot(self.A[n-1], self.weights[n]) + self.b[n]
+
                 # relu
+                self.A[n] = self.relu(self.Z[n])
 
         # end with n = size - 1
+        self.yhat = self.sigmoid(self.Z[self.Z.size-1])
+
+        # calculate loss
+        self.loss = self.cost(self.yhat)
+
+    # Backward Propagation
+    def backward_prop(self):
+        pass
 
     # Calculate summation
     def summation(self, x, w, b):
@@ -123,6 +136,23 @@ class ANN(object):
     def back_relu(self, x):
         return np.where(x <= 0, 0, 1)
 
+    # ETA calc
+    def eta_calc(self, Z):
+        return np.maximum(Z, self.eta)
+
     # Cost function
-    def cost(self, y, y_predict):
-        pass
+    def cost(self, y_predict):
+        # invert test output
+        inv_y = 1.0 - self.Y
+
+        # invert output prediction
+        inv_ypredict = 1.0 - y_predict
+
+        # update the prediction
+        y_predict = self.eta_calc(y_predict)
+
+        # update the inverted prediction
+        inv_ypredict = self.eta_calc(inv_ypredict)
+
+        # return the loss
+        return -1/self.Y.size * (np.sum(np.multiply(np.log(y_predict), self.Y) + np.multiply(inv_y, np.log(inv_ypredict))))

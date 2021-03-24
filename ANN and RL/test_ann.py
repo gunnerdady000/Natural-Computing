@@ -22,6 +22,7 @@ def main():
     net = ANN(2, 2, layers, 10, 0.1)
     net.weight_creation()
     net.weights
+    print(np.dot(x, net.weights[0]))
     for i in range(1,3):
         print(i)
 
