@@ -44,7 +44,7 @@ class ANN(object):
         # loop is 1 to end of list
         if not self.is_empty:
             # first weight is inputs and layers[0]
-            weight_n = np.random.rand(self.inputs, self.layers[0])
+            weight_n = np.random.rand(self.layers[0], self.inputs)
 
             # append to list
             self.weights.append(weight_n)
@@ -52,11 +52,11 @@ class ANN(object):
             # 1 until the one before the end of the array
             for ind in range(1, self.layers.size):
                 # current list will n-1 and n
-                weight_n = np.random.rand(self.layers[ind-1], self.layers[ind])
+                weight_n = np.random.rand(self.layers[ind], self.layers[ind-1])
                 self.weights.append(weight_n)
 
             # last layer is n-layers by outputs
-            weight_n = np.random.rand(self.layers[self.layers.size - 1], self.outputs)
+            weight_n = np.random.rand(self.outputs, self.layers[self.layers.size - 1])
             self.weights.append(weight_n)
 
             # array of biases that correspond to their respective weights
@@ -87,7 +87,7 @@ class ANN(object):
     # Forward Propagation
     def forward_prop(self):
         # start with n = 0
-        self.Z[0] = np.dot(self.X, self.weights[0]) + self.b[0]
+        self.Z[0] = np.dot(self.X.T, self.weights[0]) + self.b[0]
 
         # Zn+1 = X dot Wn+1 + bn+1
         if not self.is_empty:
