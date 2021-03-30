@@ -6,22 +6,25 @@ import time
 class ANN(object):
 
     # Initialize class
-    def __init__(self, inputs=2, outputs=2, layers=None, niter=10, learning_rate=0.1, eta=0.00000001):
-        # create empty layer and checker
-        self.is_empty = False
-
+    def __init__(self, inputs=2, outputs=2, layers=None, niter=10, learning_rate=0.1, eta=0.0000000001):
+        # add input and output to layers array
         if layers is None:
-            layers = np.array([])
-            self.is_empty = True
+            self.layers = np.array(inputs)
+            np.append(self.layers, outputs)
+        else:
+            self.layers = np.array(inputs)
+            self.layers = np.append(self.layers, layers)
+            self.layers = np.append(self.layers, outputs)
+
+
+        # n = layers - input and output
+        self.n = self.layers.size - 1
 
         # holds number of inputs
         self.inputs = inputs
 
         # holds number of outputs
         self.outputs = outputs
-
-        # ndarray of integers each value being the number of nodes in a hidden layer
-        self.layers = layers
 
         # learning rate
         self.learning_rate = learning_rate
@@ -36,84 +39,135 @@ class ANN(object):
     def train(self, X, Y):
         # get the input values
         self.X = X
+
         # get the output values
         self.Y = Y
 
+        # create weights
+        self.weight_creation()
+
+        # create error/loss array
+        self.error = []
+
+        # create a variable to see if we are done training
+        check = 0
+
+        for i in range(self.nither):
+            # forward prop
+            self.forward_prop()
+
+            # back prop
+            self.backward_prop(self.ypredict)
+
+            # collect losses and check to see if loss is acceptable
+            self.error.append(self.loss)
+
+            # maybe make this user input for accuracy
+            if self.loss < 0.05:
+                # double check that we did not get lucky
+                check +=1
+                # exit if we meet the accuracy twice as that should be good to go
+                if check == 2:
+                    return
+
+
     # Create weights based off of the layers ndarray
     def weight_creation(self):
-        # array of arrays to hold the weights
+        # array of arrays to hold the weights, Z, and A
         self.weights = []
+        self.b = []
+        self.Z = []
+        self.A = []
 
-        # loop is 1 to end of list
-        if not self.is_empty:
-            # first weight is inputs and layers[0]
-            weight_n = np.random.rand(self.layers[0], self.inputs)
+        # weights
+        for n in range(self.n):
+            # Wn = rand[layer[n], layer[n+1]]
+            Wn = np.random.rand(self.layers[n], self.layers[n+1])
+            # bn random value
+            bn = np.random.rand(self.layers[n+1],)
 
-            # append to list
-            self.weights.append(weight_n)
+            # add to array of arrays
+            self.weights.append(Wn)
+            self.b.append(bn)
 
-            # 1 until the one before the end of the array
-            for ind in range(1, self.layers.size):
-                # current list will n-1 and n
-                weight_n = np.random.rand(self.layers[ind], self.layers[ind-1])
-                self.weights.append(weight_n)
+        # Z
+        for n in range(self.n):
+            # Zn = zeros[layers[n], layers[n+1]]
+            Zn = np.zeros((self.layers[n], self.layers[n+1]))
 
-            # last layer is n-layers by outputs
-            weight_n = np.random.rand(self.outputs, self.layers[self.layers.size - 1])
-            self.weights.append(weight_n)
+            # add to array of arrays
+            self.Z.append(Zn)
 
-            # array of biases that correspond to their respective weights
-            self.b = np.random.rand(self.layers.size, 1)
+        # A
+        for n in range(self.n):
+            # An = zeros[layers[n]]
+            An = np.zeros(self.layers[n])
 
-            # hold A's
-            self.A = np.zeros(self.layers.size - 1)
-
-            # hold the Z's
-            self.Z = np.zeros(self.layers.size)
-        else:
-            # only one layer results in a single weight input by output
-            self.weights = np.random.rand(self.inputs, self.outputs)
-
-            # only one bias point
-            self.b = np.random.rand(1)
-
-            # only one A
-            self.A = np.zeros(1)
-
-            # two Z's
-            self.Z = np.zeros(2)
+            # add to array of arrays
+            self.A.append(An)
 
     # Predict using trained weights
     def predict(self, X):
-        pass
+        # will have to change the values or edit forward prop
+        self.X = X
 
-    # Forward Propagation
+        # forward prop
+        self.forward_prop()
+
+        # figure out rounding
+
+    # Forward Propagation, should have made the X's the first weight...
     def forward_prop(self):
-        # start with n = 0
+        # Z[0] = X dot W[0] + b[0]
         self.Z[0] = np.dot(self.X, self.weights[0]) + self.b[0]
-
-        # A0 is relu of Z0
         self.A[0] = self.relu(self.Z[0])
 
-        # Zn+1 = X dot Wn+1 + bn+1
-        if not self.is_empty:
+    # Zn = An dot W[n] + b[n]
+        for n in range(1, self.n):
+            self.Z[n] = np.dot(self.A[n-1], self.weights[n]) + self.b[n]
 
-            # Zn = An-1 dot W[n] + b[n]
-            for n in range(1, self.layers.size):
-                self.Z[n] = np.dot(self.A[n-1], self.weights[n]) + self.b[n]
+            # relu
+            self.A[n] = self.relu(self.Z[n])
 
-                # relu
-                self.A[n] = self.relu(self.Z[n])
-
-        # end with n = size - 1
-        self.yhat = self.sigmoid(self.Z[self.Z.size-1])
+        # end with n - 1
+        self.ypredict = self.A[self.n - 1]
 
         # calculate loss
-        self.loss = self.cost(self.yhat)
+        self.loss = self.cost(self.ypredict)
+        print(self.loss)
 
     # Backward Propagation
-    def backward_prop(self):
-        pass
+    def backward_prop(self, y_predict):
+        # why me?
+        inv_y = 1.0 - self.Y
+
+        # invert output prediction
+        inv_ypredict = 1.0 - y_predict
+
+        # delta of whys
+        dl_ypred = np.divide(inv_y, self.eta_calc(inv_ypredict)) - np.divide(self.Y, self.eta_calc(y_predict))
+
+        # delta sig
+        dl_sig = y_predict * (inv_ypredict)
+
+        # Z[n] =  dl_ypred * dl_sig
+        dl_Zn = dl_ypred * dl_sig
+
+        # now for n - count, going down in index hence backwards... this will break
+        for n in reversed(range(self.n)):
+            # find dlA = dl_Zn dot Wn.T
+            dl_An = np.dot(dl_Zn, self.weights[n].T)
+
+            # dl_Wn and update Wn, dl_Wn = An-1 dot Wn.T ,Wn = Wn - rate * dl_Wn
+            dl_Wn = np.dot(self.A[n-1].T, dl_Zn)
+            self.weights[n] = self.weights[n] - self.learning_rate * dl_Wn
+
+            # find dl_bn and update bn, dl_bn = sum(dl_zn), bn = bn - rate * dl_bn
+            dl_bn = np.sum(dl_Zn, axis=0, keepdims=True)
+            self.b[n] = self.b[n] - self.learning_rate * dl_bn
+
+            # dl_Zn = dl_An * dl_relu(Zn)
+            dl_Zn = dl_An * self.back_relu(self.Z[n-1])
 
     # Calculate summation
     def summation(self, x, w, b):
@@ -155,4 +209,4 @@ class ANN(object):
         inv_ypredict = self.eta_calc(inv_ypredict)
 
         # return the loss
-        return -1/self.Y.size * (np.sum(np.multiply(np.log(y_predict), self.Y) + np.multiply(inv_y, np.log(inv_ypredict))))
+        return -1/np.size(self.Y, 0) * (np.sum(np.multiply(np.log(y_predict), self.Y) + np.multiply(inv_y, np.log(inv_ypredict))))

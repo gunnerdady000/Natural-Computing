@@ -12,19 +12,16 @@ def main():
 
     # subtract down to 0 or 1
     y = y - 1
-
     # plot
     #plot(x,y)
 
     # one hot trick from https://stackoverflow.com/questions/29831489/convert-array-of-indices-to-1-hot-encoded-numpy-array
-    y = np.eye(np.max(y) + 1, dtype=int)[y]
-    layers = np.array([2,3,4])
+    y = np.eye(np.max(y) + 1, dtype=float)[y]
+
+    layers = np.array([2, 3, 4])
     net = ANN(2, 2, layers, 10, 0.1)
-    net.weight_creation()
-    net.weights
-    print(np.dot(x, net.weights[0]))
-    for i in range(1,3):
-        print(i)
+    net.train(x, y)
+    print(net.weights[0])
 
 def plot(x, y):
     # setup marker generator and color map
