@@ -163,21 +163,16 @@ def print_dragon_curve(L):
                 orientation = 1
         i += 1
 
-
 rows = 1700
 cols = 3250
 iterations = 6
-"""rows = 250
-cols = 250
-iterations = 6"""
 line_len = 4
 L_str = ""
-
 display_map = np.zeros((rows, cols))
 display_map[0][0] = 100
 j = 0
-# koch curve
-while j < iterations+1:
+# konch curve
+while j < iterations + 1:
     L_str = koch_curve(L_str)
     print(L_str)
     j += 1
@@ -185,16 +180,27 @@ print_koch_curve(L_str)
 plt.title("Koch Curve Fractal, "
           + str(iterations) + " Iterations")
 
+"""
+rows = 250
+cols = 250
+iterations = 10
+line_len = 4
+L_str = ""
+display_map = np.zeros((rows, cols))
+display_map[0][0] = 100
+j = 0
+
 # dragon curve
-"""while j < iterations+1:
+while j < iterations+1:
     L_str = dragon_curve(L_str)
     print(L_str)
     j += 1
 print_dragon_curve(L_str)
 plt.title("Dragon Curve Fractal, "
           + str(iterations) + " Iterations")
+
 """
-
-
 plt.imshow(display_map)
 plt.show()
+
+
