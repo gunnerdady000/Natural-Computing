@@ -25,10 +25,11 @@ class CaNn(object):
     def init(self):
         # Create the Neural net
         self.neural_net = keras.models.Sequential()
-        self.neural_net.add(layers.Dense(8, input_dim=2, kernel_initializer='normal', activation='relu'))
+        self.neural_net.add(layers.Dense(8, input_dim=2, kernel_initializer='normal', activation='elu'))
         self.neural_net.add(layers.Dense(20, kernel_initializer='normal', activation='softmax'))
-        self.neural_net.add(layers.Dense(8, kernel_initializer='normal', activation='softmax'))
-        self.neural_net.add(layers.Dense(1, kernel_initializer='normal', activation='relu'))
+        self.neural_net.add(layers.Dense(40, kernel_initializer='normal', activation='relu'))
+        self.neural_net.add(layers.Dense(20, kernel_initializer='normal', activation='softmax'))
+        self.neural_net.add(layers.Dense(1, kernel_initializer='normal', activation='elu'))
 
         # Compile model
         self.neural_net.compile(optimizer='rmsprop', loss='mse', metrics=['mae'])
@@ -43,7 +44,7 @@ class CaNn(object):
             targets,
             validation_data=(points, targets),
             batch_size=20,
-            epochs=400,
+            epochs=1000,
             shuffle=True,
             verbose=verbose)
 

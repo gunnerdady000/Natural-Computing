@@ -4,7 +4,7 @@ from CA import cellar_automa
 
 def main():
     # test with 25 cells and 150 iterations
-    cell = cellar_automa(20, 150)
+    cell = cellar_automa(20, 300)
     cell.laplace()
     cell.graph()
     cell.graph_converge()
